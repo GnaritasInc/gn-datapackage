@@ -1,0 +1,5 @@
+{
+    "require": {
+        "frictionlessdata/datapackage": "^0.1.3"
+    }
+}
