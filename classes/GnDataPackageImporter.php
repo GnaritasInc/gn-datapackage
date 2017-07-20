@@ -1,5 +1,7 @@
 <?php
 
+use frictionlessdata\datapackage;
+
 class GnDataPackageImporter {
 
 	function __construct () {
@@ -42,6 +44,16 @@ class GnDataPackageImporter {
 		$dataPath = $uploadDir . "/zipdata/";
 		$zip = $this->openZipFile($filePath);
 		$this->extractZip($zip, $dataPath);
+
+		$datapackage = $this->getDataPackage($dataPath . "datapackage.json");
+	}
+
+	function getDataPackage ($descriptor) {
+		if (!file_exists($descriptor)) {
+			throw new Exception("Package descriptor not found. Make sure your package has a datapackage.json file at the archive root.");			
+		}
+
+		return datapackage\Factory::datapackage($descriptor);
 	}
 
 	function getUploadedFileInfo ($key) {
