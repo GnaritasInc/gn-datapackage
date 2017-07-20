@@ -17,7 +17,73 @@ class GnDataPackageImporter {
 	}
 
 	function controller () {
+		if ($_POST['gndp_data_action'] == $this->dataAction && check_admin_referer($this->dataAction, 'gndp_nonce')) {
+			try {
+				
+				$this->doImport();
+
+				if (!$this->warning) {
+					$this->msg = "Data imported successfully.";
+				}
+
+			}
+			catch (Exception $e) {
+				$this->error = $e->getMessage();
+			}
+		}
+
 		include($this->includeDir . "/admin.php");
+	}
+
+	function doImport () {
+		$fileInfo = $this->getUploadedFileInfo("zip_file");
+		$filePath = $fileInfo['file'];
+		$uploadDir = dirname($filePath);
+		$dataPath = $uploadDir . "/zipdata/";
+		$zip = $this->openZipFile($filePath);
+		$this->extractZip($zip, $dataPath);
+	}
+
+	function getUploadedFileInfo ($key) {
+		$fileInfo = wp_handle_upload($_FILES[$key], array("test_form"=>false, "action"=>"gndp-import"));
+		if ($fileInfo['error']) {
+			throw new Exception("File upload error: ".$fileInfo['error']);
+		}
+
+		return $fileInfo;
+	}
+
+	function openZipFile ($path) {
+		$zip = new ZipArchive();
+		$result = $zip->open($path);
+		if ($result === true) {
+			return $zip;
+		}
+		else {
+			throw new Exception("Error reading Zip file: ".$this->getZipErrorMessage($result));			
+		}
+	}
+
+	function extractZip ($zip, $destination) {
+		if (!$zip->extractTo($destination)) {
+			throw new Exception("Error extracting zip file.");	
+		}
+	}
+
+	function getZipErrorMessage ($code) {
+		$messages = array(
+			ZipArchive::ER_EXISTS => "File already exists.",
+			ZipArchive::ER_INCONS => "Zip archive inconsistent.",
+			ZipArchive::ER_INVAL => "Invalid argument.",
+			ZipArchive::ER_MEMORY => "Malloc failure.",
+			ZipArchive::ER_NOENT => "No such file.",
+			ZipArchive::ER_NOZIP => "Not a zip archive.",
+			ZipArchive::ER_OPEN => "Can't open file.",
+			ZipArchive::ER_READ => "Read error.",
+			ZipArchive::ER_SEEK => "Seek error.",
+		);
+
+		return array_key_exists($code, $messages) ? $messages[$code] : "Unknown error.";
 	}
 
 

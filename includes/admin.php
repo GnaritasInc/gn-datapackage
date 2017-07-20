@@ -1,7 +1,16 @@
 <div class="wrap">
 <h1>Data Package Import</h1>
-<form method="POST">
-	<?php wp_nonce_field($this->dataAction, 'gndp-nonce'); ?>	
+
+<?php if($this->msg): ?>
+	<div class="updated"><p><?php echo $this->msg; ?></p></div>
+<?php elseif($this->warning): ?>
+	<div class="update-nag"><p><?php echo $this->warning; ?></p></div>
+<?php elseif($this->error): ?>
+	<div class="error"><p><?php echo $this->error; ?></p></div>
+<?php endif; ?>
+
+<form method="POST" enctype="multipart/form-data">
+	<?php wp_nonce_field($this->dataAction, 'gndp_nonce'); ?>	
 	<input type="hidden" name="gndp_data_action" value="<?php echo $this->dataAction; ?>"/>
 	<table class="form-table">
 		<tbody>
