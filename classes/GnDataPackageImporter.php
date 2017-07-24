@@ -45,15 +45,15 @@ class GnDataPackageImporter {
 		$zip = $this->openZipFile($filePath);
 		$this->extractZip($zip, $dataPath);
 
-		$datapackage = $this->getDataPackage($dataPath . "datapackage.json");
+		$datapackage = $this->getDataPackage($dataPath . "datapackage.json", $dataPath);
 	}
 
-	function getDataPackage ($descriptor) {
+	function getDataPackage ($descriptor, $basePath) {
 		if (!file_exists($descriptor)) {
 			throw new Exception("Package descriptor not found. Make sure your package has a datapackage.json file at the archive root.");			
 		}
 
-		return datapackage\Factory::datapackage($descriptor);
+		return datapackage\Factory::datapackage($descriptor, $basePath);
 	}
 
 	function getUploadedFileInfo ($key) {
