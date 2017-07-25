@@ -5,6 +5,7 @@ use frictionlessdata\datapackage;
 class GnDataPackageImporter {
 
 	var $awsEndpoint = "https://6goo1zkzoi.execute-api.us-east-1.amazonaws.com/prod/datapackage2sql";
+	var $ch = null;
 
 	function __construct () {
 		$this->homeDir = dirname(dirname(__FILE__));
@@ -95,10 +96,18 @@ class GnDataPackageImporter {
 		}		
 	}
 
+	function getCurlHandle () {
+		if (is_null($this->ch)) {
+			$this->ch = curl_init($this->awsEndpoint);
+		}
+
+		return $this->ch;
+	}
+
 	function getTableDefs ($descriptor, $tablePrefix) {
 		$postData = compact('descriptor', 'tablePrefix');		
 		
-		$ch = curl_init($this->awsEndpoint);                                                                 
+		$ch = $this->getCurlHandle();                                                                 
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
 		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
