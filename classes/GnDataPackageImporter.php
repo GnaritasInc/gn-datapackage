@@ -4,6 +4,8 @@ use frictionlessdata\datapackage;
 
 class GnDataPackageImporter {
 
+	var $awsEndpoint = "https://6goo1zkzoi.execute-api.us-east-1.amazonaws.com/prod/datapackage2sql";
+
 	function __construct () {
 		$this->homeDir = dirname(dirname(__FILE__));
 		$this->includeDir = $this->homeDir."/includes";
@@ -38,6 +40,9 @@ class GnDataPackageImporter {
 	}
 
 	function doImport () {
+		$tablePrefix = trim($_POST['table_prefix']);
+		$this->validateTablePrefix($tablePrefix);
+
 		$fileInfo = $this->getUploadedFileInfo("zip_file");
 		$filePath = $fileInfo['file'];
 		$uploadDir = dirname($filePath);
@@ -46,6 +51,70 @@ class GnDataPackageImporter {
 		$this->extractZip($zip, $dataPath);
 
 		$datapackage = $this->getDataPackage($dataPath . "datapackage.json", $dataPath);
+
+
+		$this->createSchema($datapackage, $tablePrefix);
+		$this->populateData($datapackage, $tablePrefix);
+	}
+
+	function validateTablePrefix ($prefix) {
+		if (!preg_match('/^[a-z0-9_]*$/i', $prefix)) {
+			throw new Exception("Table prefx must contain only letters, numbers or underscores.");		
+		}
+	}
+
+	function safeDbQuery ($sql) {
+		global $wpdb;
+		$wpdb->query($sql);
+		if ($err = $wpdb->last_error) {
+			throw new Exception($err);
+		}
+	}
+
+	function createSchema (&$datapackage, $tablePrefix) {
+		global $wpdb;		
+		
+		$wpdb->query("SET FOREIGN_KEY_CHECKS=0");
+		$wpdb->query("start transaction");
+		
+		try {
+			
+			foreach($datapackage->resources() as $resource) {
+				$descriptor = array("name"=>"temp", "resources"=>array($resource->descriptor()));
+				$createSql = $this->getTableDefs($descriptor, $tablePrefix);
+				$this->safeDbQuery($createSql);
+			}
+			
+			$wpdb->query("commit");
+			$wpdb->query("SET FOREIGN_KEY_CHECKS=1");
+		}
+		catch (Exception $e) {
+			$wpdb->query("rollback");
+			$wpdb->query("SET FOREIGN_KEY_CHECKS=1");
+			throw new Exception("Error creating schema: ".$e->getMessage());		
+		}		
+	}
+
+	function getTableDefs ($descriptor, $tablePrefix) {
+		$postData = compact('descriptor', 'tablePrefix');		
+		
+		$ch = curl_init($this->awsEndpoint);                                                                 
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		$responseBody = curl_exec($ch);
+		$responseStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+		if ($responseStatus != 200) {
+			throw new Exception("Error getting schema SQL: $responseBody");	
+		}
+
+		return $responseBody;
+	}
+
+	function populateData (&$datapackage, $tablePrefix) {
+
 	}
 
 	function getDataPackage ($descriptor, $basePath) {
