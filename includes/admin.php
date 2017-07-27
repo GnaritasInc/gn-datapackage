@@ -1,12 +1,12 @@
 <div class="wrap">
 <h1>Data Package Import</h1>
 
-<?php if($this->msg): ?>
-	<div class="updated"><p><?php echo $this->msg; ?></p></div>
+<?php if($this->error): ?>
+	<div class="error"><p><?php echo $this->error; ?></p></div>	
 <?php elseif($this->warning): ?>
 	<div class="update-nag"><p><?php echo $this->warning; ?></p></div>
-<?php elseif($this->error): ?>
-	<div class="error"><p><?php echo $this->error; ?></p></div>
+<?php elseif($this->msg): ?>
+	<div class="updated"><p><?php echo $this->msg; ?></p></div>
 <?php endif; ?>
 
 <form method="POST" enctype="multipart/form-data">
