@@ -1,11 +1,14 @@
 <?php
 
 use frictionlessdata\datapackage;
+use frictionlessdata\tableschema\DataSources\CsvDataSource;
 
 class GnDataPackageImporter {
 
 	var $awsEndpoint = "https://6goo1zkzoi.execute-api.us-east-1.amazonaws.com/prod/datapackage2sql";
 	var $ch = null;
+	var $dataPath = "";
+	var $createdTables = array();
 
 	function __construct () {
 		$this->homeDir = dirname(dirname(__FILE__));
@@ -41,6 +44,7 @@ class GnDataPackageImporter {
 	}
 
 	function doImport () {
+		global $wpdb;
 		$tablePrefix = trim($_POST['table_prefix']);
 		$this->validateTablePrefix($tablePrefix);
 
@@ -52,10 +56,36 @@ class GnDataPackageImporter {
 		$this->extractZip($zip, $dataPath);
 
 		$datapackage = $this->getDataPackage($dataPath . "datapackage.json", $dataPath);
+		$this->dataPath = $dataPath;
 
+		try {
+			error_log("Starting db transaction");
+			$wpdb->query("start transaction");
+			$this->createSchema($datapackage, $tablePrefix);
+			$this->populateData($datapackage, $tablePrefix);
+			error_log("Committing");
+			$wpdb->query("commit");
+		}
+		catch (Exception $e) {
+			error_log("Rolling back");
+			$wpdb->query("rollback");
+			$this->rollBackTables();
+			throw $e;
+		}
+	}
 
-		$this->createSchema($datapackage, $tablePrefix);
-		$this->populateData($datapackage, $tablePrefix);
+	function rollBackTables () {
+		global $wpdb;
+		$this->setForeignKeyChecks(0);
+		foreach($this->createdTables as $table) {
+			$wpdb->query("drop table if exists $table");
+		}
+		$this->setForeignKeyChecks(1);
+	}
+
+	function setForeignKeyChecks ($val=1) {
+		global $wpdb;
+		$wpdb->query($wpdb->prepare("SET FOREIGN_KEY_CHECKS=%d", $val));
 	}
 
 	function validateTablePrefix ($prefix) {
@@ -73,25 +103,25 @@ class GnDataPackageImporter {
 	}
 
 	function createSchema (&$datapackage, $tablePrefix) {
-		global $wpdb;		
-		
-		$wpdb->query("SET FOREIGN_KEY_CHECKS=0");
-		$wpdb->query("start transaction");
+		error_log("Creating schema tables");
+		global $wpdb;				
 		
 		try {
-			
+			$this->setForeignKeyChecks(0);
+
 			foreach($datapackage->resources() as $resource) {
 				$descriptor = array("name"=>"temp", "resources"=>array($resource->descriptor()));
 				$createSql = $this->getTableDefs($descriptor, $tablePrefix);
 				$this->safeDbQuery($createSql);
-			}
+				$this->createdTables[] = $tablePrefix.$resource->descriptor()->name;
+			}			
 			
-			$wpdb->query("commit");
-			$wpdb->query("SET FOREIGN_KEY_CHECKS=1");
+			$this->setForeignKeyChecks(1);
+
+			error_log("Done creating tables");
 		}
-		catch (Exception $e) {
-			$wpdb->query("rollback");
-			$wpdb->query("SET FOREIGN_KEY_CHECKS=1");
+		catch (Exception $e) {			
+			$this->setForeignKeyChecks(1);
 			throw new Exception("Error creating schema: ".$e->getMessage());		
 		}		
 	}
@@ -123,7 +153,43 @@ class GnDataPackageImporter {
 	}
 
 	function populateData (&$datapackage, $tablePrefix) {
+		error_log("Populating data");
+		global $wpdb;
+		foreach ($datapackage->resources() as $name => $resource) {
+			$tableName = $tablePrefix . $name;
+			$csvFileName = $resource->descriptor()->path;
+			$csv = new CsvDataSource($this->dataPath .  $csvFileName);
+			$csv->open();
+			for ($lineNum = 1; !$csv->isEof(); $lineNum++) {
+				$row = $csv->getNextLine();				
+				try {
+					$this->insertDataRow($tableName, $row);
+				}
+				catch (Exception $e) {
+					throw new Exception("Error inserting data from {$csvFileName}:{$lineNum}: ".$e->getMessage());		
+				}
+			}
+			$csv->close();
+		}
+	}
 
+	function insertDataRow ($tableName, $row) {
+		global $wpdb;
+		$valueArray = array();
+		$valueFormat = array();
+		foreach ($row as $value) {
+			if (strlen(trim($value))) {
+				$valueFormat[] = "%s";
+				$valueArray[] = $value;
+			}
+			else {
+				$valueFormat[] = "null";
+			}
+		}
+		$sql = "insert into `$tableName` (`". implode('`, `', array_keys($row)) ."`)";
+		$sql .= " values (". implode(', ', $valueFormat) .")";
+
+		$this->safeDbQuery($wpdb->prepare($sql, $valueArray));
 	}
 
 	function getDataPackage ($descriptor, $basePath) {
