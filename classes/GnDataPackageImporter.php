@@ -59,28 +59,31 @@ class GnDataPackageImporter {
 		$this->dataPath = $dataPath;
 
 		try {
+			$this->setForeignKeyChecks(0);
+			
 			error_log("Starting db transaction");
 			$wpdb->query("start transaction");
 			$this->createSchema($datapackage, $tablePrefix);
 			$this->populateData($datapackage, $tablePrefix);
 			error_log("Committing");
 			$wpdb->query("commit");
+
+			$this->setForeignKeyChecks(1);
 		}
 		catch (Exception $e) {
 			error_log("Rolling back");
 			$wpdb->query("rollback");
 			$this->rollBackTables();
+			$this->setForeignKeyChecks(1);
 			throw $e;
 		}
 	}
 
 	function rollBackTables () {
-		global $wpdb;
-		$this->setForeignKeyChecks(0);
+		global $wpdb;		
 		foreach($this->createdTables as $table) {
 			$wpdb->query("drop table if exists $table");
-		}
-		$this->setForeignKeyChecks(1);
+		}		
 	}
 
 	function setForeignKeyChecks ($val=1) {
@@ -106,8 +109,7 @@ class GnDataPackageImporter {
 		error_log("Creating schema tables");
 		global $wpdb;				
 		
-		try {
-			$this->setForeignKeyChecks(0);
+		try {		
 
 			foreach($datapackage->resources() as $resource) {
 				$descriptor = array("name"=>"temp", "resources"=>array($resource->descriptor()));
@@ -116,12 +118,9 @@ class GnDataPackageImporter {
 				$this->createdTables[] = $tablePrefix.$resource->descriptor()->name;
 			}			
 			
-			$this->setForeignKeyChecks(1);
-
 			error_log("Done creating tables");
 		}
 		catch (Exception $e) {			
-			$this->setForeignKeyChecks(1);
 			throw new Exception("Error creating schema: ".$e->getMessage());		
 		}		
 	}
@@ -161,7 +160,11 @@ class GnDataPackageImporter {
 			$csv = new CsvDataSource($this->dataPath .  $csvFileName);
 			$csv->open();
 			for ($lineNum = 1; !$csv->isEof(); $lineNum++) {
-				$row = $csv->getNextLine();				
+				$row = $csv->getNextLine();
+				if ($this->isEmpty($row)) {
+					$this->warning .= "<br/>Empty row in {$csvFileName}:{$lineNum}. Skipping.";
+					continue;
+				}				
 				try {
 					$this->insertDataRow($tableName, $row);
 				}
@@ -171,6 +174,10 @@ class GnDataPackageImporter {
 			}
 			$csv->close();
 		}
+	}
+
+	function isEmpty ($row) {
+		return count(array_filter($row, 'strlen')) ? false : true;
 	}
 
 	function insertDataRow ($tableName, $row) {
