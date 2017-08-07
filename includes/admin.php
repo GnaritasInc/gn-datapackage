@@ -1,6 +1,10 @@
 <div class="wrap">
 <h1>Data Package Import</h1>
 
+<?php if($this->isImportRequest()): ?>
+	<p><?php $this->handleImportRequest(); ?></p>
+<?php endif; ?>
+
 <?php if($this->error): ?>
 	<div class="error"><p><?php echo $this->error; ?></p></div>	
 <?php elseif($this->warning): ?>

@@ -24,23 +24,35 @@ class GnDataPackageImporter {
 		add_options_page("Data Package Import", "Data Package Importer", "manage_options", "gn-datapackage", array(&$this, "controller"));
 	}
 
-	function controller () {
-		if ($_POST['gndp_data_action'] == $this->dataAction && check_admin_referer($this->dataAction, 'gndp_nonce')) {
-			try {
-				
-				$this->doImport();
-
-				if (!$this->warning) {
-					$this->msg = "Data imported successfully.";
-				}
-
-			}
-			catch (Exception $e) {
-				$this->error = $e->getMessage();
-			}
-		}
+	function controller () {		
 
 		include($this->includeDir . "/admin.php");
+	}
+
+	function handleImportRequest () {
+		try {
+			ob_end_flush();
+			set_time_limit(0);
+
+			$this->writeLine("Processing data import...");
+			$this->doImport();
+
+			if (!$this->warning) {
+				$this->msg = "Data imported successfully.";
+			}
+
+		}
+		catch (Exception $e) {
+			$this->error = $e->getMessage();
+		}				
+	}
+
+	function isImportRequest () {
+		return ($_POST['gndp_data_action'] == $this->dataAction && check_admin_referer($this->dataAction, 'gndp_nonce'));
+	}
+
+	function writeLine ($str) {
+		echo "$str <br/>";
 	}
 
 	function doImport () {
@@ -53,6 +65,9 @@ class GnDataPackageImporter {
 		$uploadDir = dirname($filePath);
 		$dataPath = $uploadDir . "/zipdata/";
 		$zip = $this->openZipFile($filePath);
+
+		$this->writeLine("Extracting ZIP archive...");
+
 		$this->extractZip($zip, $dataPath);
 
 		$datapackage = $this->getDataPackage($dataPath . "datapackage.json", $dataPath);
@@ -106,7 +121,7 @@ class GnDataPackageImporter {
 	}
 
 	function createSchema (&$datapackage, $tablePrefix) {
-		error_log("Creating schema tables");
+		$this->writeLine("Creating schema tables");
 		global $wpdb;				
 		
 		try {		
@@ -118,7 +133,7 @@ class GnDataPackageImporter {
 				$this->createdTables[] = $tablePrefix.$resource->descriptor()->name;
 			}			
 			
-			error_log("Done creating tables");
+			$this->writeLine("Done creating tables");
 		}
 		catch (Exception $e) {			
 			throw new Exception("Error creating schema: ".$e->getMessage());		
@@ -152,17 +167,20 @@ class GnDataPackageImporter {
 	}
 
 	function populateData (&$datapackage, $tablePrefix) {
-		error_log("Populating data");
+		$this->writeLine("Populating data");
 		global $wpdb;
 		foreach ($datapackage->resources() as $name => $resource) {
 			$tableName = $tablePrefix . $name;
 			$csvFileName = $resource->descriptor()->path;
+
+			$this->writeLine("Reading $csvFileName");
+
 			$csv = new CsvDataSource($this->dataPath .  $csvFileName);
 			$csv->open();
 			for ($lineNum = 1; !$csv->isEof(); $lineNum++) {
 				$row = $csv->getNextLine();
 				if ($this->isEmpty($row)) {
-					$this->warning .= "<br/>Empty row in {$csvFileName}:{$lineNum}. Skipping.";
+					$this->writeLine("Empty row in {$csvFileName}:{$lineNum}. Skipping.");
 					continue;
 				}				
 				try {
