@@ -31,7 +31,7 @@ class GnDataPackageImporter {
 
 	function handleImportRequest () {
 		try {
-			ob_end_flush();
+			while (@ob_end_flush());
 			set_time_limit(0);
 
 			$this->writeLine("Processing data import...");
