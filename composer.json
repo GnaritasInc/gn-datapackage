@@ -1,5 +1,11 @@
 {
     "require": {
-        "frictionlessdata/datapackage": "^0.1.3"
-    }
+        "frictionlessdata/datapackage": "dev-pathfix"
+    },
+    "repositories": [
+    	{
+	    	"type": "vcs",
+	    	"url": "https://github.com/GnaritasInc/datapackage-php"
+	    }
+	]
 }
