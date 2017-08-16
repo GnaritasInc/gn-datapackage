@@ -4,9 +4,8 @@ use frictionlessdata\datapackage;
 use frictionlessdata\tableschema\DataSources\CsvDataSource;
 
 class GnDataPackageImporter {
-
-	var $awsEndpoint = "https://6goo1zkzoi.execute-api.us-east-1.amazonaws.com/prod/datapackage2sql";
-	var $ch = null;
+	
+	var $sqlGenerator = null;
 	var $dataPath = "";
 	var $createdTables = array();
 
@@ -127,8 +126,7 @@ class GnDataPackageImporter {
 		try {		
 
 			foreach($datapackage->resources() as $resource) {
-				$descriptor = array("name"=>"temp", "resources"=>array($resource->descriptor()));
-				$createSql = $this->getTableDefs($descriptor, $tablePrefix);
+				$createSql = $this->getTableDef($resource, $tablePrefix);
 				$this->safeDbQuery($createSql);
 				$this->createdTables[] = $tablePrefix.$resource->descriptor()->name;
 			}			
@@ -138,32 +136,14 @@ class GnDataPackageImporter {
 		catch (Exception $e) {			
 			throw new Exception("Error creating schema: ".$e->getMessage());		
 		}		
-	}
+	}	
 
-	function getCurlHandle () {
-		if (is_null($this->ch)) {
-			$this->ch = curl_init($this->awsEndpoint);
+	function getTableDef ($resource, $tablePrefix) {
+		if (!$this->sqlGenerator) {
+			$this->sqlGenerator = new GnSQLGenerator($tablePrefix);
 		}
 
-		return $this->ch;
-	}
-
-	function getTableDefs ($descriptor, $tablePrefix) {
-		$postData = compact('descriptor', 'tablePrefix');		
-		
-		$ch = $this->getCurlHandle();                                                                 
-		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-		$responseBody = curl_exec($ch);
-		$responseStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-		if ($responseStatus != 200) {
-			throw new Exception("Error getting schema SQL: $responseBody");	
-		}
-
-		return $responseBody;
+		return $this->sqlGenerator->getTableSQL($resource);
 	}
 
 	function populateData (&$datapackage, $tablePrefix) {

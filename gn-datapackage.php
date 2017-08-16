@@ -7,5 +7,7 @@
  */
 
 require_once("vendor/autoload.php");
+require_once("classes/GnSQLGenerator.php");
 require_once("classes/GnDataPackageImporter.php");
+
 $gndp = new GnDataPackageImporter();
