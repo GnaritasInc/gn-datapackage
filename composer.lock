@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "23f32ee881492087cac411341348326c",
+    "content-hash": "f90961608ef5358bfda4a4a4d2cf499b",
     "packages": [
         {
             "name": "alchemy/zippy",
@@ -141,12 +141,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/GnaritasInc/datapackage-php.git",
-                "reference": "2f485d1e622e9212577aa8f0f32b91e8f1640dc1"
+                "reference": "23583e1147d8c709bc81ac839f5f5123c2fe367d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/GnaritasInc/datapackage-php/zipball/2f485d1e622e9212577aa8f0f32b91e8f1640dc1",
-                "reference": "2f485d1e622e9212577aa8f0f32b91e8f1640dc1",
+                "url": "https://api.github.com/repos/GnaritasInc/datapackage-php/zipball/23583e1147d8c709bc81ac839f5f5123c2fe367d",
+                "reference": "23583e1147d8c709bc81ac839f5f5123c2fe367d",
                 "shasum": ""
             },
             "require": {
@@ -187,7 +187,7 @@
             "support": {
                 "source": "https://github.com/GnaritasInc/datapackage-php/tree/pathfix"
             },
-            "time": "2017-08-14 16:13:54"
+            "time": "2017-08-16 16:17:33"
         },
         {
             "name": "frictionlessdata/tableschema",
@@ -226,6 +226,36 @@
             ],
             "description": "A utility library for working with Table Schema",
             "time": "2017-07-13T12:53:13+00:00"
+        },
+        {
+            "name": "gnaritasinc/datapackage2sql",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/GnaritasInc/datapackage2sql-php.git",
+                "reference": "04820c3c5a487273e7b6dd6c32bb0f587642c4e8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/GnaritasInc/datapackage2sql-php/zipball/04820c3c5a487273e7b6dd6c32bb0f587642c4e8",
+                "reference": "04820c3c5a487273e7b6dd6c32bb0f587642c4e8",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "gnaritasinc\\datapackage2sql\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "PHP library for generating SQL from data packages.",
+            "support": {
+                "source": "https://github.com/GnaritasInc/datapackage2sql-php/tree/master",
+                "issues": "https://github.com/GnaritasInc/datapackage2sql-php/issues"
+            },
+            "time": "2017-08-17 15:22:34"
         },
         {
             "name": "jmikola/geojson",
@@ -451,16 +481,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.4.0",
+            "version": "v1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "f29dca382a6485c3cbe6379f0c61230167681937"
+                "reference": "7c8fae0ac1d216eb54349e6a8baa57d515fe8803"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/f29dca382a6485c3cbe6379f0c61230167681937",
-                "reference": "f29dca382a6485c3cbe6379f0c61230167681937",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/7c8fae0ac1d216eb54349e6a8baa57d515fe8803",
+                "reference": "7c8fae0ac1d216eb54349e6a8baa57d515fe8803",
                 "shasum": ""
             },
             "require": {
@@ -472,7 +502,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.4-dev"
+                    "dev-master": "1.5-dev"
                 }
             },
             "autoload": {
@@ -506,7 +536,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2017-06-09T14:24:12+00:00"
+            "time": "2017-06-14T15:44:48+00:00"
         },
         {
             "name": "symfony/process",
@@ -627,7 +657,8 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "frictionlessdata/datapackage": 20
+        "frictionlessdata/datapackage": 20,
+        "gnaritasinc/datapackage2sql": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

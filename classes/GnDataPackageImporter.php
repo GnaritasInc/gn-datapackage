@@ -2,6 +2,7 @@
 
 use frictionlessdata\datapackage;
 use frictionlessdata\tableschema\DataSources\CsvDataSource;
+use gnaritasinc\datapackage2sql\WPSQLGenerator;
 
 class GnDataPackageImporter {
 	
@@ -17,7 +18,7 @@ class GnDataPackageImporter {
 
 		add_action("admin_menu", array(&$this, "adminMenu"));
 
-	}
+	}	
 
 	function adminMenu () {
 		add_options_page("Data Package Import", "Data Package Importer", "manage_options", "gn-datapackage", array(&$this, "controller"));
@@ -139,8 +140,9 @@ class GnDataPackageImporter {
 	}	
 
 	function getTableDef ($resource, $tablePrefix) {
+		global $wpdb;
 		if (!$this->sqlGenerator) {
-			$this->sqlGenerator = new GnSQLGenerator($tablePrefix);
+			$this->sqlGenerator = new WPSQLGenerator($wpdb, $tablePrefix);
 		}
 
 		return $this->sqlGenerator->getTableSQL($resource);
