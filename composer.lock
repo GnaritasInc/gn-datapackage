@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "f90961608ef5358bfda4a4a4d2cf499b",
+    "content-hash": "83f0a788747a06d4c6170e9a37322f25",
     "packages": [
         {
             "name": "alchemy/zippy",
@@ -137,16 +137,16 @@
         },
         {
             "name": "frictionlessdata/datapackage",
-            "version": "dev-pathfix",
+            "version": "v0.1.5",
             "source": {
                 "type": "git",
-                "url": "https://github.com/GnaritasInc/datapackage-php.git",
-                "reference": "f6a3dd908727ad8f27110a0d54f87d9242419c99"
+                "url": "https://github.com/frictionlessdata/datapackage-php.git",
+                "reference": "c04564880d131dde3c9325c9ae146e159046a788"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/GnaritasInc/datapackage-php/zipball/f6a3dd908727ad8f27110a0d54f87d9242419c99",
-                "reference": "f6a3dd908727ad8f27110a0d54f87d9242419c99",
+                "url": "https://api.github.com/repos/frictionlessdata/datapackage-php/zipball/c04564880d131dde3c9325c9ae146e159046a788",
+                "reference": "c04564880d131dde3c9325c9ae146e159046a788",
                 "shasum": ""
             },
             "require": {
@@ -166,28 +166,12 @@
                     "frictionlessdata\\datapackage\\": "src/"
                 }
             },
-            "scripts": {
-                "test": [
-                    "phpunit --debug --coverage-clover coverage-clover.xml --bootstrap tests/autoload.php tests/"
-                ],
-                "update_registry": [
-                    "php update_registry.php"
-                ],
-                "style-check": [
-                    "./.install_cs_fixer.sh && ./php-cs-fixer fix --dry-run --verbose --diff"
-                ],
-                "style-fix": [
-                    "./.install_cs_fixer.sh && ./php-cs-fixer fix --verbose"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
             "description": "A utility library for working with Data Packages",
-            "support": {
-                "source": "https://github.com/GnaritasInc/datapackage-php/tree/pathfix"
-            },
-            "time": "2017-08-29 18:34:13"
+            "time": "2017-08-30T05:41:34+00:00"
         },
         {
             "name": "frictionlessdata/tableschema",
@@ -233,12 +217,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/GnaritasInc/datapackage2sql-php.git",
-                "reference": "04820c3c5a487273e7b6dd6c32bb0f587642c4e8"
+                "reference": "ea190a3e9fc77792cf2aefb3097cac2b7303e8ab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/GnaritasInc/datapackage2sql-php/zipball/04820c3c5a487273e7b6dd6c32bb0f587642c4e8",
-                "reference": "04820c3c5a487273e7b6dd6c32bb0f587642c4e8",
+                "url": "https://api.github.com/repos/GnaritasInc/datapackage2sql-php/zipball/ea190a3e9fc77792cf2aefb3097cac2b7303e8ab",
+                "reference": "ea190a3e9fc77792cf2aefb3097cac2b7303e8ab",
                 "shasum": ""
             },
             "type": "library",
@@ -255,7 +239,7 @@
                 "source": "https://github.com/GnaritasInc/datapackage2sql-php/tree/master",
                 "issues": "https://github.com/GnaritasInc/datapackage2sql-php/issues"
             },
-            "time": "2017-08-17 15:22:34"
+            "time": "2017-08-29 21:17:43"
         },
         {
             "name": "jmikola/geojson",
@@ -657,7 +641,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "frictionlessdata/datapackage": 20,
         "gnaritasinc/datapackage2sql": 20
     },
     "prefer-stable": false,

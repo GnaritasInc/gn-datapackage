@@ -1,13 +1,9 @@
 {
     "require": {
-        "frictionlessdata/datapackage": "dev-pathfix",
+        "frictionlessdata/datapackage": "^0.1.5",
         "gnaritasinc/datapackage2sql": "dev-master"
     },
-    "repositories": [
-    	{
-	    	"type": "vcs",
-	    	"url": "https://github.com/GnaritasInc/datapackage-php"
-	    },
+    "repositories": [    	
 	    {
 	    	"type": "vcs",
 	    	"url": "https://github.com/GnaritasInc/datapackage2sql-php"
